@@ -128,7 +128,7 @@ jobs:
   protected-folders:
     name: Check Protected Folders
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # Runs on BOTH push and pull_request events
     
     steps:
     - name: Checkout code
@@ -138,17 +138,28 @@ jobs:
     
     - name: Check folder permissions
       env:
-        PR_AUTHOR: ${{ github.event.pull_request.user.login }}
         # TEAM MEMBERS
         MEMBER1: "WE2722"           # Wiam - Decision Tree
         MEMBER2: "AbdellahBaqua"    # Abdellah - Random Forest
         MEMBER3: "Saif-dbot"        # Saif - Gradient Boosting
       run: |
+        # Get the actor (person who triggered the workflow)
+        ACTOR="${{ github.actor }}"
+        EVENT="${{ github.event_name }}"
+        
         echo "=============================================="
-        echo "PR Author: $PR_AUTHOR"
+        echo "Event: $EVENT"
+        echo "Actor: $ACTOR"
         echo "=============================================="
         
-        CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+        # Get changed files based on event type
+        if [ "$EVENT" == "pull_request" ]; then
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+        else
+          # For push events, compare with previous commit
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git diff --name-only $(git rev-list --max-parents=0 HEAD) HEAD)
+        fi
+        
         echo "Changed files:"
         echo "$CHANGED_FILES"
         echo "=============================================="
@@ -157,36 +168,37 @@ jobs:
         
         # Check decision_tree/ - Only Member 1 (Wiam)
         if echo "$CHANGED_FILES" | grep -q "^decision_tree/"; then
-          if [ "$PR_AUTHOR" != "$MEMBER1" ]; then
+          if [ "$ACTOR" != "$MEMBER1" ]; then
             VIOLATIONS="$VIOLATIONS\n[X] decision_tree/ - Only WE2722 (Wiam) can modify"
           fi
         fi
         
         # Check random_forest/ - Only Member 2 (Abdellah)
         if echo "$CHANGED_FILES" | grep -q "^random_forest/"; then
-          if [ "$PR_AUTHOR" != "$MEMBER2" ]; then
+          if [ "$ACTOR" != "$MEMBER2" ]; then
             VIOLATIONS="$VIOLATIONS\n[X] random_forest/ - Only AbdellahBaqua (Abdellah) can modify"
           fi
         fi
         
         # Check gradient_boosting/ - Only Member 3 (Saif)
         if echo "$CHANGED_FILES" | grep -q "^gradient_boosting/"; then
-          if [ "$PR_AUTHOR" != "$MEMBER3" ]; then
+          if [ "$ACTOR" != "$MEMBER3" ]; then
             VIOLATIONS="$VIOLATIONS\n[X] gradient_boosting/ - Only Saif-dbot (Saif) can modify"
           fi
         fi
         
         # Check config files - Only Project Lead (Wiam)
         if echo "$CHANGED_FILES" | grep -qE "^\.github/|^README\.md$|^CONTRIBUTING\.md$"; then
-          if [ "$PR_AUTHOR" != "$MEMBER1" ]; then
+          if [ "$ACTOR" != "$MEMBER1" ]; then
             VIOLATIONS="$VIOLATIONS\n[X] Config files - Only WE2722 (Project Lead) can modify"
           fi
         fi
         
         if [ -n "$VIOLATIONS" ]; then
           echo ""
-          echo "PERMISSION VIOLATIONS DETECTED"
-          echo "=============================================="
+          echo "=========================================="
+          echo "   PERMISSION VIOLATIONS DETECTED"
+          echo "=========================================="
           echo -e "$VIOLATIONS"
           echo ""
           echo "FOLDER OWNERSHIP:"
@@ -194,7 +206,7 @@ jobs:
           echo "  random_forest/     -> AbdellahBaqua (Abdellah)"
           echo "  gradient_boosting/ -> Saif-dbot (Saif)"
           echo "  .github/, configs  -> WE2722 (Project Lead)"
-          echo "=============================================="
+          echo "=========================================="
           exit 1
         fi
         
