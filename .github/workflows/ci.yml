@@ -173,17 +173,19 @@ jobs:
           fi
         fi
         
-        # Check random_forest/ - Only Member 2 (Abdellah)
+        # Check random_forest/ - ONLY Member 2 (Abdellah) - NO EXCEPTIONS
         if echo "$CHANGED_FILES" | grep -q "^random_forest/"; then
           if [ "$ACTOR" != "$MEMBER2" ]; then
-            VIOLATIONS="$VIOLATIONS\n[X] random_forest/ - Only AbdellahBaqua (Abdellah) can modify"
+            VIOLATIONS="$VIOLATIONS\n[X] random_forest/ - Only AbdellahBaqua (Abdellah) can modify this folder!"
+            VIOLATIONS="$VIOLATIONS\n    You ($ACTOR) are NOT authorized."
           fi
         fi
         
-        # Check gradient_boosting/ - Only Member 3 (Saif)
+        # Check gradient_boosting/ - ONLY Member 3 (Saif) - NO EXCEPTIONS
         if echo "$CHANGED_FILES" | grep -q "^gradient_boosting/"; then
           if [ "$ACTOR" != "$MEMBER3" ]; then
-            VIOLATIONS="$VIOLATIONS\n[X] gradient_boosting/ - Only Saif-dbot (Saif) can modify"
+            VIOLATIONS="$VIOLATIONS\n[X] gradient_boosting/ - Only Saif-dbot (Saif) can modify this folder!"
+            VIOLATIONS="$VIOLATIONS\n    You ($ACTOR) are NOT authorized."
           fi
         fi
         
