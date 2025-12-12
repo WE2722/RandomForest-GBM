@@ -223,6 +223,26 @@ jobs:
         fi
         
         # =================================================================
+        # ABDELLAH'S PROTECTED FILES - Cannot be modified by anyone else
+        # =================================================================
+        
+        # Protected test files (Abdellah only)
+        ABDELLAH_TESTS="tests/test_classification_RF.py|tests/test_regression_RF.py|tests/test_comparison_RF.py|tests/test_sklearn_comparison_RF.py"
+        if echo "$CHANGED_FILES" | grep -qE "$ABDELLAH_TESTS"; then
+          if [ "$ACTOR" != "$MEMBER2" ]; then
+            VIOLATIONS="$VIOLATIONS\n[X] Abdellah's test files are PROTECTED - Only AbdellahBaqua can modify them"
+          fi
+        fi
+        
+        # Protected image folder (Abdellah only)
+        ABDELLAH_IMAGES="images/randomforest/"
+        if echo "$CHANGED_FILES" | grep -qE "$ABDELLAH_IMAGES"; then
+          if [ "$ACTOR" != "$MEMBER2" ]; then
+            VIOLATIONS="$VIOLATIONS\n[X] Abdellah's image folder is PROTECTED - Only AbdellahBaqua can modify it"
+          fi
+        fi
+        
+        # =================================================================
         # SHARED FOLDERS - All team members can ADD new files
         # =================================================================
         # tests/ and images/ - team members can add NEW files/folders
@@ -247,8 +267,12 @@ jobs:
           echo "  .github/, configs           -> WE2722 (Project Lead)"
           echo ""
           echo "WIAM'S PROTECTED FILES (untouchable):"
-          echo "  tests/test_*.py, tests/my_tree_vs_sklearn.py"
+          echo "  tests/test_*_tree.py, tests/my_tree_vs_sklearn.py"
           echo "  images/classification/, images/regression/, images/comparison/"
+          echo ""
+          echo "ABDELLAH'S PROTECTED FILES (untouchable):"
+          echo "  tests/test_*_RF.py"
+          echo "  images/randomforest/"
           echo ""
           echo "SHARED (team can ADD new files):"
           echo "  tests/ (new files)          -> All team members"
