@@ -196,6 +196,37 @@ jobs:
           fi
         fi
         
+        # =================================================================
+        # WIAM'S PROTECTED FILES - Cannot be modified by anyone else
+        # =================================================================
+        
+        # Protected test files (Wiam only)
+        WIAM_TESTS="tests/test_classification_tree.py|tests/test_regression_tree.py|tests/my_tree_vs_sklearn.py"
+        if echo "$CHANGED_FILES" | grep -qE "$WIAM_TESTS"; then
+          if [ "$ACTOR" != "$MEMBER1" ]; then
+            VIOLATIONS="$VIOLATIONS\n[X] Wiam's test files are PROTECTED - Only WE2722 can modify them"
+          fi
+        fi
+        
+        # Protected image folders (Wiam only)
+        WIAM_IMAGES="images/classification/|images/regression/|images/comparison/"
+        if echo "$CHANGED_FILES" | grep -qE "$WIAM_IMAGES"; then
+          if [ "$ACTOR" != "$MEMBER1" ]; then
+            VIOLATIONS="$VIOLATIONS\n[X] Wiam's image folders are PROTECTED - Only WE2722 can modify them"
+          fi
+        fi
+        
+        # =================================================================
+        # SHARED FOLDERS - All team members can ADD new files
+        # =================================================================
+        # tests/ and images/ - team members can add NEW files/folders
+        # (but cannot modify Wiam's existing files above)
+        if echo "$CHANGED_FILES" | grep -qE "^images/|^tests/"; then
+          if [ "$ACTOR" != "$MEMBER1" ] && [ "$ACTOR" != "$MEMBER2" ] && [ "$ACTOR" != "$MEMBER3" ]; then
+            VIOLATIONS="$VIOLATIONS\n[X] images/ or tests/ - Only team members can modify"
+          fi
+        fi
+        
         if [ -n "$VIOLATIONS" ]; then
           echo ""
           echo "=========================================="
@@ -204,10 +235,18 @@ jobs:
           echo -e "$VIOLATIONS"
           echo ""
           echo "FOLDER OWNERSHIP:"
-          echo "  decision_tree/     -> WE2722 (Wiam)"
-          echo "  random_forest/     -> AbdellahBaqua (Abdellah)"
-          echo "  gradient_boosting/ -> Saif-dbot (Saif)"
-          echo "  .github/, configs  -> WE2722 (Project Lead)"
+          echo "  decision_tree/              -> WE2722 (Wiam)"
+          echo "  random_forest/              -> AbdellahBaqua (Abdellah)"
+          echo "  gradient_boosting/          -> Saif-dbot (Saif)"
+          echo "  .github/, configs           -> WE2722 (Project Lead)"
+          echo ""
+          echo "WIAM'S PROTECTED FILES (untouchable):"
+          echo "  tests/test_*.py, tests/my_tree_vs_sklearn.py"
+          echo "  images/classification/, images/regression/, images/comparison/"
+          echo ""
+          echo "SHARED (team can ADD new files):"
+          echo "  tests/ (new files)          -> All team members"
+          echo "  images/ (new folders)       -> All team members"
           echo "=========================================="
           exit 1
         fi

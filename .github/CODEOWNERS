@@ -30,8 +30,25 @@
 /.gitignore @WE2722
 
 # -----------------------------------------------------------------------------
-# Tests - Each member owns their module's tests
+# WIAM'S PROTECTED TEST FILES - Only Wiam can modify
 # -----------------------------------------------------------------------------
 /tests/test_classification_tree.py @WE2722
 /tests/test_regression_tree.py @WE2722
 /tests/my_tree_vs_sklearn.py @WE2722
+
+# -----------------------------------------------------------------------------
+# WIAM'S PROTECTED IMAGE FOLDERS - Only Wiam can modify
+# -----------------------------------------------------------------------------
+/images/classification/ @WE2722
+/images/regression/ @WE2722
+/images/comparison/ @WE2722
+
+# -----------------------------------------------------------------------------
+# SHARED: Tests folder - All team members can ADD new test files
+# -----------------------------------------------------------------------------
+/tests/ @WE2722 @AbdellahBaqua @Saif-dbot
+
+# -----------------------------------------------------------------------------
+# SHARED: Images folder - All team members can ADD new image folders
+# -----------------------------------------------------------------------------
+/images/ @WE2722 @AbdellahBaqua @Saif-dbot
