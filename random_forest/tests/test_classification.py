@@ -124,7 +124,7 @@ def test_binary_classification():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_binary_classification.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_binary_classification.png")
+    print("\n[OK] Plot saved: rf_binary_classification.png")
     
     return accuracy
 
@@ -175,7 +175,7 @@ def test_multiclass_classification():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_multiclass_classification.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_multiclass_classification.png")
+    print("\n[OK] Plot saved: rf_multiclass_classification.png")
     
     # Final Random Forest
     rf_final = RandomForest(
@@ -232,7 +232,7 @@ def test_xor_problem():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_xor_problem.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_xor_problem.png")
+    print("\n[OK] Plot saved: rf_xor_problem.png")
     
     return accuracy
 
@@ -281,7 +281,7 @@ def test_feature_importances():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_feature_importances.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_feature_importances.png")
+    print("\n[OK] Plot saved: rf_feature_importances.png")
     
     return importances
 

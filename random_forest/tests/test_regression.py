@@ -103,7 +103,7 @@ def test_sine_regression():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_sine_regression.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_sine_regression.png")
+    print("\n[OK] Plot saved: rf_sine_regression.png")
     
     # Print results
     print("\nResults by n_estimators:")
@@ -155,7 +155,7 @@ def test_polynomial_regression():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_polynomial_regression.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_polynomial_regression.png")
+    print("\n[OK] Plot saved: rf_polynomial_regression.png")
     
     return r2
 
@@ -207,7 +207,7 @@ def test_step_function_regression():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_step_function_regression.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_step_function_regression.png")
+    print("\n[OK] Plot saved: rf_step_function_regression.png")
     
     return r2
 

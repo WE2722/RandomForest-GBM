@@ -63,7 +63,7 @@ def test_effect_of_n_estimators():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_n_estimators_effect.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_n_estimators_effect.png")
+    print("\n[OK] Plot saved: rf_n_estimators_effect.png")
     
     print("\nAccuracy by number of trees:")
     for n_trees, acc in zip(n_trees_range, accuracies):
@@ -144,7 +144,7 @@ def test_variance_reduction():
     plt.savefig(os.path.join(os.path.dirname(__file__), 'images', 
                 'rf_variance_reduction.png'), dpi=150, bbox_inches='tight')
     plt.close()
-    print("\n✓ Plot saved: rf_variance_reduction.png")
+    print("\n[OK] Plot saved: rf_variance_reduction.png")
     
     print(f"\nVariance Reduction Analysis:")
     print(f"  Single tree accuracies: {[f'{acc*100:.1f}%' for acc in single_tree_accs]}")
