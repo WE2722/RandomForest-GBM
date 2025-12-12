@@ -44,6 +44,19 @@
 /images/comparison/ @WE2722
 
 # -----------------------------------------------------------------------------
+# ABDELLAH'S PROTECTED TEST FILES - Only Abdellah can modify
+# -----------------------------------------------------------------------------
+/tests/test_classification_RF.py @AbdellahBaqua
+/tests/test_regression_RF.py @AbdellahBaqua
+/tests/test_comparison_RF.py @AbdellahBaqua
+/tests/test_sklearn_comparison_RF.py @AbdellahBaqua
+
+# -----------------------------------------------------------------------------
+# ABDELLAH'S PROTECTED IMAGE FOLDER - Only Abdellah can modify
+# -----------------------------------------------------------------------------
+/images/randomforest/ @AbdellahBaqua
+
+# -----------------------------------------------------------------------------
 # SHARED: Tests folder - All team members can ADD new test files
 # -----------------------------------------------------------------------------
 /tests/ @WE2722 @AbdellahBaqua @Saif-dbot
