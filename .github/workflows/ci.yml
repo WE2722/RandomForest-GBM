@@ -139,7 +139,7 @@ jobs:
     - name: Check folder permissions
       env:
         # TEAM MEMBERS
-        MEMBER1: "WE2722"           # Wiam - Decision Tree
+        MEMBER1: "WE2722"           # Wiam - Decision Tree + Project Lead (can merge all)
         MEMBER2: "AbdellahBaqua"    # Abdellah - Random Forest
         MEMBER3: "Saif-dbot"        # Saif - Gradient Boosting
       run: |
@@ -151,6 +151,12 @@ jobs:
         echo "Event: $EVENT"
         echo "Actor: $ACTOR"
         echo "=============================================="
+        
+        # PROJECT LEAD can merge any PR (to integrate team work)
+        if [ "$ACTOR" == "$MEMBER1" ]; then
+          echo "[OK] Project Lead ($MEMBER1) - authorized to merge all branches"
+          exit 0
+        fi
         
         # Get changed files based on event type
         if [ "$EVENT" == "pull_request" ]; then
@@ -173,7 +179,7 @@ jobs:
           fi
         fi
         
-        # Check random_forest/ - ONLY Member 2 (Abdellah) - NO EXCEPTIONS
+        # Check random_forest/ - ONLY Member 2 (Abdellah)
         if echo "$CHANGED_FILES" | grep -q "^random_forest/"; then
           if [ "$ACTOR" != "$MEMBER2" ]; then
             VIOLATIONS="$VIOLATIONS\n[X] random_forest/ - Only AbdellahBaqua (Abdellah) can modify this folder!"
@@ -181,7 +187,7 @@ jobs:
           fi
         fi
         
-        # Check gradient_boosting/ - ONLY Member 3 (Saif) - NO EXCEPTIONS
+        # Check gradient_boosting/ - ONLY Member 3 (Saif)
         if echo "$CHANGED_FILES" | grep -q "^gradient_boosting/"; then
           if [ "$ACTOR" != "$MEMBER3" ]; then
             VIOLATIONS="$VIOLATIONS\n[X] gradient_boosting/ - Only Saif-dbot (Saif) can modify this folder!"
