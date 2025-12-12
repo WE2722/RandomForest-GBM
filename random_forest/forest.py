@@ -3,7 +3,11 @@ Random Forest Implementation (Member 2)
 
 Based on Breiman (2001): "Random Forests"
 
-TODO: Implement this class!
+This is a simple implementation of Random Forest that uses the DecisionTree class
+as base learners. It follows the key principles:
+1. Bootstrap sampling of training data
+2. Random feature selection at each split
+3. Averaging predictions (regression) or voting (classification)
 """
 
 import numpy as np
@@ -92,7 +96,7 @@ class RandomForest:
         self.random_state = random_state
         self.n_jobs = n_jobs
         
-        # TODO: Initialize these in fit()
+        # Attributes initialized after fit()
         self.estimators_ = []
         self.feature_importances_ = None
         self.oob_score_ = None
@@ -100,87 +104,190 @@ class RandomForest:
         self.n_classes_ = None
         self.classes_ = None
         self.task_type_ = None
+        self._rng = None
+    
+    def _determine_task_type(self, y):
+        """Determine if this is classification or regression."""
+        unique_values = np.unique(y)
+        n_unique = len(unique_values)
+        is_float = np.issubdtype(y.dtype, np.floating)
+        
+        if n_unique <= 20 and not is_float:
+            return 'classification'
+        else:
+            return 'regression'
     
     def fit(self, X, y):
-        """
-        Build a forest of trees from training data.
+        """Build a forest of trees from training data using bootstrap sampling."""
+        # Convert to numpy arrays
+        X = np.asarray(X, dtype=np.float64)
+        y = np.asarray(y)
         
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Training features.
+        # Handle 1D input
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
         
-        y : ndarray of shape (n_samples,)
-            Target values.
+        n_samples, n_features = X.shape
+        self.n_features_ = n_features
         
-        Returns
-        -------
-        self : RandomForest
-            Fitted estimator.
-        """
-        # TODO: Implement this method
-        # 
-        # Steps:
-        # 1. Detect task type (classification vs regression)
-        # 2. Initialize random state
-        # 3. For each tree:
-        #    a. Generate bootstrap sample (sample WITH replacement)
-        #    b. Create DecisionTree with max_features='sqrt'
-        #    c. Fit tree on bootstrap sample
-        #    d. Store tree in self.estimators_
-        # 4. Calculate feature_importances_ (average across trees)
-        # 5. Calculate OOB score if requested
-        #
-        # HINT: Use this for bootstrap sampling:
-        # bootstrap_indices = rng.choice(n_samples, size=n_samples, replace=True)
+        # Initialize random state
+        if self.random_state is not None:
+            self._rng = np.random.RandomState(self.random_state)
+        else:
+            self._rng = np.random.RandomState()
         
-        raise NotImplementedError("TODO: Implement fit() method")
+        # Determine task type (classification or regression)
+        self.task_type_ = self._determine_task_type(y)
+        
+        # Store class information for classification
+        if self.task_type_ == 'classification':
+            self.classes_ = np.unique(y)
+            self.n_classes_ = len(self.classes_)
+        else:
+            self.classes_ = None
+            self.n_classes_ = None
+        
+        # Initialize estimators list
+        self.estimators_ = []
+        
+        # Initialize feature importances accumulator
+        feature_importances = np.zeros(n_features)
+        
+        # Build n_estimators trees
+        for i in range(self.n_estimators):
+            # Step 1: Bootstrap sampling - sample WITH replacement
+            bootstrap_indices = self._rng.choice(n_samples, size=n_samples, replace=True)
+            X_bootstrap = X[bootstrap_indices]
+            y_bootstrap = y[bootstrap_indices]
+            
+            # Step 2: Create a DecisionTree with specified parameters
+            tree = DecisionTree(
+                max_depth=self.max_depth,
+                min_samples_split=self.min_samples_split,
+                min_samples_leaf=self.min_samples_leaf,
+                criterion='gini' if self.task_type_ == 'classification' else 'mse',
+                max_features=self.max_features,
+                random_state=None
+            )
+            
+            # Step 3: Fit tree on bootstrap sample
+            tree.fit(X_bootstrap, y_bootstrap)
+            
+            # Step 4: Store fitted tree
+            self.estimators_.append(tree)
+            
+            # Accumulate feature importances
+            if tree.feature_importances_ is not None:
+                feature_importances += tree.feature_importances_
+        
+        # Step 5: Calculate average feature importances across all trees
+        self.feature_importances_ = feature_importances / self.n_estimators
+        
+        # Step 6: Calculate OOB (Out-of-Bag) score if requested
+        if self.oob_score:
+            self.oob_score_ = self._calculate_oob_score(X, y)
+        
+        return self
+    
+    def _calculate_oob_score(self, X, y):
+        """Calculate out-of-bag score."""
+        n_samples = len(y)
+        
+        if self.task_type_ == 'classification':
+            oob_predictions = [[] for _ in range(n_samples)]
+        else:
+            oob_predictions = [[] for _ in range(n_samples)]
+        
+        for tree_idx, tree in enumerate(self.estimators_):
+            tree_pred = tree.predict(X)
+            for sample_idx in range(n_samples):
+                oob_predictions[sample_idx].append(tree_pred[sample_idx])
+        
+        # Aggregate OOB predictions
+        if self.task_type_ == 'classification':
+            oob_pred = np.array([
+                max(set(preds), key=preds.count) if preds else 0
+                for preds in oob_predictions
+            ])
+            return np.mean(oob_pred == y)
+        else:
+            oob_pred = np.array([
+                np.mean(preds) if preds else 0
+                for preds in oob_predictions
+            ])
+            ss_res = np.sum((y - oob_pred) ** 2)
+            ss_tot = np.sum((y - np.mean(y)) ** 2)
+            return 1 - (ss_res / ss_tot) if ss_tot != 0 else 0
     
     def predict(self, X):
-        """
-        Predict class labels or regression values.
+        """Predict class labels or regression values."""
+        if not self.estimators_:
+            raise ValueError("Forest has not been fitted. Call fit() first.")
         
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Samples to predict.
+        X = np.asarray(X, dtype=np.float64)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
         
-        Returns
-        -------
-        y_pred : ndarray of shape (n_samples,)
-            Predicted values.
-        """
-        # TODO: Implement this method
-        #
-        # For classification: majority vote across all trees
-        # For regression: average across all trees
+        n_samples = len(X)
         
-        raise NotImplementedError("TODO: Implement predict() method")
+        # Get predictions from all trees
+        tree_predictions = np.array([
+            tree.predict(X) for tree in self.estimators_
+        ])
+        
+        if self.task_type_ == 'classification':
+            # Classification: Majority voting
+            predictions = np.array([
+                max(set(tree_predictions[:, i]), key=list(tree_predictions[:, i]).count)
+                for i in range(n_samples)
+            ])
+        else:
+            # Regression: Average predictions from all trees
+            predictions = np.mean(tree_predictions, axis=0)
+        
+        return predictions
     
     def predict_proba(self, X):
-        """
-        Predict class probabilities (classification only).
+        """Predict class probabilities (classification only)."""
+        if self.task_type_ != 'classification':
+            raise ValueError("predict_proba only available for classification tasks.")
         
-        Parameters
-        ----------
-        X : ndarray of shape (n_samples, n_features)
-            Samples to predict.
+        if not self.estimators_:
+            raise ValueError("Forest has not been fitted. Call fit() first.")
         
-        Returns
-        -------
-        proba : ndarray of shape (n_samples, n_classes)
-            Class probabilities.
-        """
-        # TODO: Implement this method
-        #
-        # Average predict_proba() across all trees
+        X = np.asarray(X, dtype=np.float64)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
         
-        raise NotImplementedError("TODO: Implement predict_proba() method")
+        n_samples = len(X)
+        n_classes = len(self.classes_)
+        
+        # Get probabilities from all trees and average them
+        proba_sum = np.zeros((n_samples, n_classes))
+        
+        for tree in self.estimators_:
+            tree_proba = tree.predict_proba(X)
+            proba_sum += tree_proba
+        
+        # Average probabilities across all trees
+        proba = proba_sum / len(self.estimators_)
+        
+        return proba
     
-    def _compute_oob_score(self, X, y):
-        """
-        Compute out-of-bag score.
+    def score(self, X, y):
+        """Calculate accuracy (classification) or R² (regression)."""
+        predictions = self.predict(X)
         
-        TODO: Implement this method (optional but recommended)
-        """
-        raise NotImplementedError("TODO: Implement OOB score calculation")
+        if self.task_type_ == 'classification':
+            return np.mean(predictions == y)
+        else:
+            ss_res = np.sum((y - predictions) ** 2)
+            ss_tot = np.sum((y - np.mean(y)) ** 2)
+            return 1 - (ss_res / ss_tot) if ss_tot != 0 else 0
+    
+    def __repr__(self) -> str:
+        """String representation of the model."""
+        return (f"RandomForest(n_estimators={self.n_estimators}, "
+                f"max_depth={self.max_depth}, "
+                f"max_features='{self.max_features}', "
+                f"random_state={self.random_state})")
