@@ -4,8 +4,7 @@
 
 ## Your Task
 Implement **Gradient Boosting Machine (GBM)** based on:
-- Friedman (2001): *"Greedy Function Approximation: A Gradient Boosting Machine"*
-- Breiman (2001) for decision tree base learners
+- **Breiman (2001)**: *"Random Forests"* - ensemble methods and decision tree foundations
 
 ## 📋 Requirements
 
