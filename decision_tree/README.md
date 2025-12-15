@@ -495,7 +495,7 @@ print(f"Sklearn    - Accuracy: {sk_acc:.2%}, Time: {sk_time:.3f}s")
 
 ## 👥 Authors
 
-**Wiam** - Decision Tree Implementation (Member 1)
+**Wiame EL HAFID** - Decision Tree Implementation 
 
 Part of the **RandomForest-GBM** project.
 
