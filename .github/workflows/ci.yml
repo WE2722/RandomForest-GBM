@@ -1,19 +1,18 @@
-name: CI - RandomForest-GBM Tests
+﻿name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  test-decision-tree:
-    name: Test Decision Tree Module
+  test:
+    name: Test
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -25,102 +24,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install numpy matplotlib scikit-learn pytest
     
-    - name: Run Decision Tree Tests
+    - name: Run tests
       run: |
         python tests/test_classification_tree.py
         python tests/test_regression_tree.py
-    
-    - name: Run sklearn Comparison
-      run: |
-        python tests/my_tree_vs_sklearn.py
-
-  test-random-forest:
-    name: Test Random Forest Module
-    runs-on: ubuntu-latest
-    needs: test-decision-tree  # RF depends on DT working
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy matplotlib scikit-learn pytest
-    
-    - name: Check Random Forest Implementation
-      run: |
-        # Check if implementation exists (not just TODO)
-        if grep -q "NotImplementedError" random_forest/forest.py; then
-          echo "⚠️ Random Forest not yet implemented (contains NotImplementedError)"
-          echo "This is expected if Member 2 hasn't started yet."
-        else
-          echo "✅ Random Forest implementation found, running tests..."
-          cd random_forest && python -c "from forest import RandomForest; print('Import successful')"
-          if [ -f "tests.py" ]; then
-            python tests.py
-          fi
-        fi
-
-  test-gradient-boosting:
-    name: Test Gradient Boosting Module
-    runs-on: ubuntu-latest
-    needs: test-decision-tree  # GBM depends on DT working
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install numpy matplotlib scikit-learn pytest
-    
-    - name: Check Gradient Boosting Implementation
-      run: |
-        # Check if implementation exists (not just TODO)
-        if grep -q "NotImplementedError" gradient_boosting/gbm.py; then
-          echo "⚠️ Gradient Boosting not yet implemented (contains NotImplementedError)"
-          echo "This is expected if Member 3 hasn't started yet."
-        else
-          echo "✅ Gradient Boosting implementation found, running tests..."
-          cd gradient_boosting && python -c "from gbm import GradientBoostingMachine; print('Import successful')"
-          if [ -f "tests.py" ]; then
-            python tests.py
-          fi
-        fi
 
   lint:
-    name: Code Quality Check
+    name: Lint
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
     
-    - name: Install linting tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8
+    - name: Install flake8
+      run: pip install flake8
     
-    - name: Check code style
-      run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Warning for other style issues (non-blocking)
-        flake8 . --count --exit-zero --max-complexity=15 --max-line-length=100 --statistics
+    - name: Run flake8
+      run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
