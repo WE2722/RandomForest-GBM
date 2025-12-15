@@ -13,7 +13,7 @@
 3. [Implementation](#implementation)
 4. [Usage](#usage)
 5. [Performance & Benchmarks](#performance--benchmarks)
-6. [References](#references)
+
 
 ---
 
@@ -433,10 +433,7 @@ All tests passing with excellent performance:
 - Feature Importances: Properly normalized (sum = 1.0)
 - Staged Predictions: Consistent with final predictions
 
-## References
-- Friedman, J. H. (2001). Greedy Function Approximation: A Gradient Boosting Machine.
-- Friedman, J. H. (2002). Stochastic Gradient Boosting.
-- Section 4 of Friedman (2001): Algorithm details
+
 
 ## Package Integration Notes
 
@@ -474,13 +471,4 @@ __all__ = [
 ```python
 from decision_tree import DecisionTree
 ```
-
-### API Compatibility
-
-The implementation follows sklearn conventions:
-- `.fit(X, y)` returns self for method chaining
-- `.predict(X)` returns predictions
-- `.predict_proba(X)` returns class probabilities (classifier only)
-- `.staged_predict(X)` yields predictions at each stage
-- `._` suffix for fitted attributes (estimators_, init_, etc.)
 
