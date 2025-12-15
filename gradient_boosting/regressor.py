@@ -1,4 +1,4 @@
-"""Gradient Boosting Machine Implementation (Member 3)"""
+
 
 import numpy as np
 import sys
@@ -6,21 +6,21 @@ sys.path.insert(0, '..')
 from decision_tree import DecisionTree
 
 
-class GradientBoostingMachine:
+class GradientBoostingRegressor:
     """
-    Generic Gradient Boosting Machine implementation.
+    Gradient Boosting Regressor for regression tasks.
     
-    Implements gradient boosting for both regression and classification tasks
-    by building an ensemble of weak learners in a stage-wise fashion.
+    Builds an ensemble of decision trees sequentially, where each new tree
+    attempts to correct the residual errors made by the previous trees.
     
     Attributes:
-        n_estimators (int): Number of boosting iterations.
-        learning_rate (float): Step size shrinkage to prevent overfitting.
-        max_depth (int): Maximum depth of individual trees.
-        min_samples_split (int): Minimum samples to split an internal node.
-        min_samples_leaf (int): Minimum samples at a leaf node.
-        subsample (float): Fraction of samples used per tree (stochastic GB).
-        loss (str): Loss function ('squared_error', 'absolute_error', 'log_loss').
+        n_estimators (int): Number of boosting stages to perform.
+        learning_rate (float): Shrinks the contribution of each tree.
+        max_depth (int): Maximum depth of the individual regression estimators.
+        min_samples_split (int): Minimum samples required to split a node.
+        min_samples_leaf (int): Minimum samples required at a leaf node.
+        subsample (float): Fraction of samples for fitting base learners.
+        loss (str): Loss function ('squared_error' or 'absolute_error').
         random_state (int): Random seed for reproducibility.
     """
     def __init__(
@@ -34,6 +34,9 @@ class GradientBoostingMachine:
         loss='squared_error',
         random_state=None
     ):
+        if loss not in ['squared_error', 'absolute_error']:
+            raise ValueError(f"loss must be 'squared_error' or 'absolute_error', got {loss}")
+        
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.max_depth = max_depth
@@ -51,41 +54,47 @@ class GradientBoostingMachine:
     
     def _init_prediction(self, y):
         """
-        Initialize prediction baseline based on loss function.
+        Initialize the prediction baseline based on the loss function.
         
-        Computes an appropriate starting value for the boosting process:
-        - Mean for squared error
-        - Median for absolute error
-        - Log-odds for log loss (binary classification)
+        Uses mean for squared error loss and median for absolute error loss.
         
         Args:
             y (array-like): Target values.
             
         Returns:
             float: Initial prediction value.
-            
-        Raises:
-            ValueError: If loss function is not recognized.
         """
-
         if self.loss == 'squared_error':
             return np.mean(y)
-        elif self.loss == 'absolute_error':
+        else:  # absolute_error
             return np.median(y)
-        elif self.loss == 'log_loss':
-            # Binary classification initialization
-            p = np.mean(y)
-            p = np.clip(p, 1e-15, 1 - 1e-15)
-            return np.log(p / (1 - p))
-        else:
-            raise ValueError(f"Unknown loss: {self.loss}")
+    
+    def _compute_residuals(self, y, y_pred):
+        """
+        Compute the negative gradient of the loss function.
+        
+        For squared error, returns the actual residuals (y - y_pred).
+        For absolute error, returns the sign of residuals.
+        
+        Args:
+            y (array-like): True target values.
+            y_pred (array-like): Current predictions.
+            
+        Returns:
+            array: Residuals for each sample.
+        """
+        diff = y - y_pred
+        if self.loss == 'squared_error':
+            return diff
+        else:  # absolute_error
+            return np.sign(diff)
     
     def fit(self, X, y):
         """
-        Fit the gradient boosting model to training data.
+        Fit the gradient boosting regressor on training data.
         
-        Builds an ensemble by iteratively adding trees that predict the
-        negative gradient (residuals) of the loss function.
+        Sequentially builds an ensemble of decision trees, each fitting
+        on the residuals of the previous predictions.
         
         Args:
             X (array-like): Training input samples of shape (n_samples, n_features).
@@ -98,23 +107,28 @@ class GradientBoostingMachine:
         y = np.asarray(y)
         self.n_features_ = X.shape[1]
         
+       
         if self.random_state is not None:
             rng = np.random.RandomState(self.random_state)
         else:
             rng = np.random.RandomState()
         
+       
         self.init_ = self._init_prediction(y)
-        
         y_pred = np.full(X.shape[0], self.init_, dtype=float)
         
+    
         self.feature_importances_ = np.zeros(self.n_features_)
-        
+   
         self.estimators_ = []
         self.train_score_ = []
         
+        
         for m in range(self.n_estimators):
+         
             residuals = self._compute_residuals(y, y_pred)
             
+           
             if self.subsample < 1.0:
                 n_samples = X.shape[0]
                 indices = rng.choice(n_samples, size=int(n_samples * self.subsample), replace=False)
@@ -124,6 +138,7 @@ class GradientBoostingMachine:
                 X_fit = X
                 residuals_fit = residuals
             
+       
             tree = DecisionTree(
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
@@ -134,21 +149,21 @@ class GradientBoostingMachine:
             )
             tree.fit(X_fit, residuals_fit)
             
+          
             tree_pred = tree.predict(X)
+            
+           
             y_pred = y_pred + self.learning_rate * tree_pred
             
+         
             self.estimators_.append(tree)
+            
+            # Add feature importances with check
             if tree.feature_importances_ is not None:
                 self.feature_importances_ += tree.feature_importances_
             
-            if self.loss == 'squared_error':
-                loss = np.mean((y - y_pred) ** 2)
-            elif self.loss == 'absolute_error':
-                loss = np.mean(np.abs(y - y_pred))
-            else:  
-                proba = 1 / (1 + np.exp(-y_pred))
-                loss = -np.mean(y * np.log(np.clip(proba, 1e-15, 1)) + (1 - y) * np.log(np.clip(1 - proba, 1e-15, 1)))
             
+            loss = np.mean((y - y_pred) ** 2)
             self.train_score_.append(loss)
         
         # Normalize feature importances
@@ -159,9 +174,10 @@ class GradientBoostingMachine:
     
     def predict(self, X):
         """
-        Predict target values for X using the fitted ensemble.
+        Predict regression target for X.
         
-        Aggregates predictions from all trees with learning rate weighting.
+        Sums the predictions from all trees in the ensemble, weighted
+        by the learning rate.
         
         Args:
             X (array-like): Input samples of shape (n_samples, n_features).
@@ -179,16 +195,16 @@ class GradientBoostingMachine:
     
     def staged_predict(self, X):
         """
-        Predict target values at each boosting stage.
+        Predict regression target at each stage for X.
         
-        Yields predictions after each tree is added to the ensemble,
-        allowing performance monitoring and early stopping.
+        Generates predictions incrementally as each tree is added,
+        useful for early stopping and model analysis.
         
         Args:
             X (array-like): Input samples of shape (n_samples, n_features).
             
         Yields:
-            array: Predictions at each stage of boosting.
+            array: Predicted values at each boosting stage.
         """
         X = np.asarray(X)
         y_pred = np.full(X.shape[0], self.init_, dtype=float)
@@ -196,35 +212,3 @@ class GradientBoostingMachine:
         for tree in self.estimators_:
             y_pred += self.learning_rate * tree.predict(X)
             yield y_pred.copy()
-    
-    def _compute_residuals(self, y, y_pred):
-        """
-        Compute residuals (negative gradient) based on loss function.
-        
-        Calculates the negative gradient of the loss function with respect
-        to the current predictions:
-        - Squared error: actual residuals (y - y_pred)
-        - Absolute error: sign of residuals
-        - Log loss: difference between labels and probabilities
-        
-        Args:
-            y (array-like): True target values.
-            y_pred (array-like): Current model predictions.
-            
-        Returns:
-            array: Residuals for each sample.
-            
-        Raises:
-            ValueError: If loss function is not recognized.
-        """
-
-        if self.loss == 'squared_error':
-            return y - y_pred
-        elif self.loss == 'absolute_error':
-            return np.sign(y - y_pred)
-        elif self.loss == 'log_loss':
-            # Binary classification: negative gradient of log loss
-            proba = 1 / (1 + np.exp(-y_pred))
-            return y - proba
-        else:
-            raise ValueError(f"Unknown loss: {self.loss}")

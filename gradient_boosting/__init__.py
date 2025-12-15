@@ -1,6 +1,15 @@
-# Gradient Boosting Machine Module
-# Member 3 Implementation
 
+
+# Import main classes for package-level access
+from .regressor import GradientBoostingRegressor
+from .classifier import GradientBoostingClassifier
 from .gbm import GradientBoostingMachine
 
-__all__ = ['GradientBoostingMachine']
+
+__all__ = [
+    'GradientBoostingRegressor',
+    'GradientBoostingClassifier',
+    'GradientBoostingMachine',
+]
+
+
