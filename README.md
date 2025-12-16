@@ -1,6 +1,6 @@
 # RandomForest-GBM
 
-Unified repository for the team's ensemble-learning implementations: a modular CART Decision Tree, a Random Forest ensemble and a Gradient Boosting Machine (GBM) implementation. This README summarizes each module, shows quick start examples, testing instructions, and contribution notes so teammates can collaborate and evaluate results consistently.
+Unified repository for the team's ensemble-learning implementations: a modular CART Decision Tree, a Random Forest ensemble and a Gradient Boosting Machine (GBM) implementation. This README summarizes each module, shows quick start examples, and testing instructions notes so teammates can evaluate results consistently.
 
 ---
 
