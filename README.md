@@ -107,7 +107,6 @@ print('GBM MSE:', ((gbm.predict(X) - y) ** 2).mean())
 - Entropy (classification): $H(t)=-\\sum_k p_k \\log p_k$
 - MSE (regression): $\\mathrm{MSE}(t)=\\frac{1}{n}\\sum_i (y_i-\\bar y)^2$
 - Impurity decrease for a split: $\\Delta I = I_{parent} - \\frac{n_L}{n}I_L - \\frac{n_R}{n}I_R$
-- RF variance reduction intuition: $\\mathrm{Var}(\\hat f_{ens})=\\rho\\sigma^2+(1-\\rho)\\sigma^2/M$
 
 ---
 
