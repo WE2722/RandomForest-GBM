@@ -147,16 +147,6 @@ Examples (embedded):
 ![GBM vs sklearn](images/comparison/my_gbm_vs_sklearn.png)
 
 
-**Development & contribution**
-
-- Keep modules modular: prefer changes in `decision_tree/` only when they are generic improvements to the base learner.
-- Add tests for new functionality under `tests/` and add plots under `images/` where relevant.
-- Use the existing API signatures where possible to retain compatibility with ensemble code.
-
-See `CONTRIBUTING.md` for branch, PR and code style rules.
-
----
-
 **License**
 
 MIT License — see `LICENSE`.
